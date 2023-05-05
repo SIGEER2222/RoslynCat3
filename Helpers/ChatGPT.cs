@@ -1,4 +1,5 @@
-﻿using OpenAI.GPT3;
+﻿using Microsoft.Extensions.Options;
+using OpenAI.GPT3;
 using OpenAI.GPT3.Managers;
 using OpenAI.GPT3.ObjectModels;
 using OpenAI.GPT3.ObjectModels.RequestModels;
@@ -7,6 +8,11 @@ namespace RoslynCat.Helpers
 {
 	public class ChatGPT
 	{
+		private IOptions<AppSettings> _config;
+
+        public ChatGPT(IOptions<AppSettings> config) {
+			_config = config;
+        }
 		/// <summary>
 		/// 向OpenAI发送请求，模型是ChatGpt3_5Turbo
 		/// </summary>
@@ -18,7 +24,7 @@ namespace RoslynCat.Helpers
 			if (string.IsNullOrWhiteSpace(userText)) {
 				return result;
 			}
-			string OPENAPI_TOKEN = new GetConfig().OpenAI;
+			string OPENAPI_TOKEN = _config.Value.OpneAI;
 			var openAiService = new OpenAIService(new OpenAiOptions(){
 				ApiKey =  OPENAPI_TOKEN
 			});

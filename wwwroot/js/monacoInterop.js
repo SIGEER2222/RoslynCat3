@@ -32,6 +32,7 @@ monacoInterop.getOldCode = () => {
 //创建和初始化编辑器
 monacoInterop.createEditor = (elementId, code) => {
     let editor;
+    
     if (elementId == 'editorId') {
         if (code != defaultCode) {
             sourceCode = code;
@@ -42,36 +43,24 @@ monacoInterop.createEditor = (elementId, code) => {
 
         monacoInterop.setMonarchTokensProvider();
         monacoInterop.setLanguageConfiguration();
-        monacoInterop.CSharpRegister();
     } else if (elementId = 'resultId') {
         editor = module.createEditor(elementId, code);
     }
     monacoInterop.editors[elementId] = editor;
 }
 
-
-monacoInterop.CSharpRegister = (elementId) => {
-    let languageId = "csharp";
-    let autoRun = false;
-    //TODO
-    monaco.languages.registerSignatureHelpProvider(languageId, {
-        signatureHelpTriggerCharacters: ["("],
-        signatureHelpRetriggerCharacters: [","],
-        provideSignatureHelp: (model, position, token, context) => {
-        }
-    });
-}
-
 //注册C#语言的语法提示、快捷键等
 monacoInterop.registerMonacoProviders = async (dotNetObject) => {
 
     let autoRun = false;
+    const suggestionsTab = module.suggestionsTab;
 
     // 注册自动完成提供程序
     monaco.languages.registerCompletionItemProvider(languageId, {
         triggerCharacters: ['.', ' ', ','],
         provideCompletionItems: async (model, position) => {
-            const suggestions = await getProvidersAsync(model.getValue(), model.getOffsetAt(position));
+            let suggestions = await getProvidersAsync(model.getValue(), model.getOffsetAt(position));
+            suggestions = suggestionsTab.concat(suggestions);
             return {suggestions: suggestions};
         }
     });
@@ -152,7 +141,6 @@ monacoInterop.registerMonacoProviders = async (dotNetObject) => {
         })
     }
 
-    const suggestionsTab = module.suggestionsTab.slice();
     /**
      * 异步函数，用于从后端获取建议列表
      * @param {string} code - 当前编辑器中的代码
@@ -160,7 +148,7 @@ monacoInterop.registerMonacoProviders = async (dotNetObject) => {
      * @returns {Array} - 建议列表
      */
     async function getProvidersAsync(code, position) {
-        let suggestions = suggestionsTab;
+        let suggestions = [];
         await dotNetObject.invokeMethodAsync('ProvideCompletionItems', code, position).then(result => {
             let res = JSON.parse(result);
             for (let key in res) {

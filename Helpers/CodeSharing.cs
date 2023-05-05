@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.CodeAnalysis.Options;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 using RoslynCat.Interface;
 using System.Net.Http.Headers;
 using System.Text.Json.Nodes;
@@ -14,10 +16,9 @@ namespace RoslynCat.Helpers
 		public string GistId { get; set; }
 		private HttpClient _githubClient;
 
-		public CodeSharing(IHttpClientFactory httpClientFactory) {
+		public CodeSharing(IHttpClientFactory httpClientFactory,IOptions<AppSettings> config) {
 			_githubClient = httpClientFactory.CreateClient("GithubApi");
-			GetConfig config = new GetConfig();
-			string token = config.GistId;
+			string token = config.Value.GistId;
 			_githubClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("GistExample","1.0"));
 			_githubClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token",token);
 		}
